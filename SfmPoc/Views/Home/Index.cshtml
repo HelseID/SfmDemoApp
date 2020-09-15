@@ -5,7 +5,8 @@
 
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <p>This page does not require a logged on user.</p>
+    <p>Click @Html.ActionLink("here", "Secured") to access a protected page.</p>
 </div>
 
 @if(Model != null)
