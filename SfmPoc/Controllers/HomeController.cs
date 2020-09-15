@@ -34,6 +34,11 @@ namespace SfmPoc.Controllers
             return View(User.Claims.ToList());
         }
 
+        public IActionResult AccessDenied()
+        {
+            return Content("Access denied!");
+        }
+
         [Authorize(policy: "HasSession")]
         public async Task<IActionResult> Secured()
         {

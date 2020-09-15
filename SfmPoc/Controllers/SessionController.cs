@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -17,14 +18,14 @@ namespace SfmPoc.Controllers
 
         [HttpPost]
         [Route("api/createsession")]
-        public SessionIdModel Post(InitializeModel model)
+        public SessionIdModel CreateSession(InitializeModel model)
         {
             if(model == null || string.IsNullOrEmpty(model.AccessToken ))
             {
                 throw new InvalidOperationException();
             }
 
-            if(!TokenValidator.ValidateAccessToken(model.AccessToken))
+            if (!TokenValidator.ValidateAccessToken(model.AccessToken, out _))
             {
                 throw new Exception("Access token was not validated");
             }
@@ -48,16 +49,24 @@ namespace SfmPoc.Controllers
 
         [HttpPost]
         [Route("api/refreshSession")]
-        public IActionResult Update(UpdateModel model)
+        public IActionResult RefreshSession(UpdateModel model)
         {
             if (model == null || string.IsNullOrEmpty(model.AccessToken))
             {
                 throw new InvalidOperationException();
             }
 
-            if (!TokenValidator.ValidateAccessToken(model.AccessToken))
+            if (!TokenValidator.ValidateAccessToken(model.AccessToken, out ClaimsPrincipal newPrincipal))
             {
                 throw new Exception("Access token was not validated");
+            }
+
+            var originalAccessToken = memoryCache.Get<string>(model.SessionId + "_at");
+            TokenValidator.ValidateAccessToken(originalAccessToken, out ClaimsPrincipal originalPrincipal);
+
+            if(newPrincipal.FindFirstValue("client_id") != originalPrincipal.FindFirstValue("client_id"))
+            {
+                throw new Exception("Client ID of original and new access token does not match!");
             }
 
             memoryCache.Set(model.SessionId + "_at", model.AccessToken);

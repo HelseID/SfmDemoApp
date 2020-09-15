@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace SfmPoc.Controllers
 {
@@ -10,8 +11,7 @@ namespace SfmPoc.Controllers
         public string Post()
         {
             var token = Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-
-            if (TokenValidator.ValidateAccessToken(token))
+            if (TokenValidator.ValidateAccessToken(token, out _))
             {
                 return "API called OK";
             }

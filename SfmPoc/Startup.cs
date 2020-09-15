@@ -23,7 +23,10 @@ namespace SfmPoc
 
             services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
+                .AddCookie(options => {
+                    options.LoginPath = "/home/accessdenied";
+                    options.AccessDeniedPath = "/home/accessdenied";                
+                });
 
             services.AddAuthorization(options => {
                 options.AddPolicy("HasSession", p => p.RequireClaim("SessionId"));

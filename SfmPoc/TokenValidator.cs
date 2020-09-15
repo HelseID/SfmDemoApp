@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace SfmPoc
 {
@@ -10,7 +11,7 @@ namespace SfmPoc
         static readonly SecurityKey securityKey = new X509SecurityKey(new System.Security.Cryptography.X509Certificates.X509Certificate2(Convert.FromBase64String(signingKey)));
 
 
-        public static bool ValidateAccessToken(string accessToken)
+        public static bool ValidateAccessToken(string accessToken, out ClaimsPrincipal validatedPrincipal)
         {   
             var parameters = new TokenValidationParameters
             {
@@ -25,10 +26,12 @@ namespace SfmPoc
 
             try
             {
-                var validation = new JwtSecurityTokenHandler().ValidateToken(accessToken, parameters, out SecurityToken validatedToken);
+                validatedPrincipal = new JwtSecurityTokenHandler().ValidateToken(accessToken, parameters, out SecurityToken validatedToken);
             }
             catch (Exception ex)
             {
+                // TODO: Handle the exception?
+                validatedPrincipal = null;
                 return false;
             }
 
