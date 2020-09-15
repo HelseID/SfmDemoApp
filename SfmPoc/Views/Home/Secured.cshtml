@@ -1,0 +1,15 @@
+﻿@model string;
+@{
+    ViewData["Title"] = "Secured Page";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>This page is only available if you have an authorized user.</p>
+
+<h1>AccessToken:</h1>
+<pre>@ViewBag.AccessToken</pre>
+
+
+<h1>API response:</h1>
+<pre>@Model</pre>
+
