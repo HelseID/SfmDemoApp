@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using IdentityModel.Client;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -60,51 +55,6 @@ namespace SfmPoc.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }
-
-        public IActionResult Login(string oneTimeCode, string nonce)
-        {
-            var sessionId = GetSessionId(oneTimeCode);
-
-            if (string.IsNullOrEmpty(sessionId))
-            {
-                throw new Exception("Unknown one time code " + oneTimeCode);
-            }
-
-            ValidateSecret(sessionId, nonce);
-
-            var claims = new List<Claim>
-            {
-                new Claim("SessionId", sessionId)
-            };
-
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            var user = new ClaimsPrincipal(identity);
-            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, user);
-
-            return RedirectToAction("Index");
-        }
-
-        private string GetSessionId(string oneTimeCode)
-        {
-            var sessionId = _memoryCache.Get<string>(oneTimeCode);
-            _memoryCache.Remove(oneTimeCode);
-            return sessionId;
-        }
-
-        private void ValidateSecret(string sessionId, string nonce)
-        {
-            using var hashAlg = SHA256.Create();
-
-            var computedHash = Convert.ToBase64String(hashAlg.ComputeHash(Convert.FromBase64String(nonce)));
-            var inputHash = _memoryCache.Get<string>(sessionId + "_hash");
-            _memoryCache.Remove(sessionId + "_hash");
-
-            if (inputHash != computedHash)
-            {
-                throw new Exception("Invalid secret! Got secret with hash: " + computedHash + ". Expected hash: " + inputHash + ".");
-            }
         }
 
         private string GetAccessTokenForSession(string sessionId)
